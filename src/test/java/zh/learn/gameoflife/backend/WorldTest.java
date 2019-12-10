@@ -11,7 +11,7 @@ import java.util.function.BiPredicate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class GridTest {
+public class WorldTest {
     @Test
     public void aloneCellDies() {
         Cell dyingCell = new Cell(0, 0);
@@ -101,10 +101,10 @@ public class GridTest {
     }
 
     private void testCellInNextState(Set<Cell> initialState, Cell cell, BiPredicate<Set<Cell>, Cell> shouldSurvive) {
-        Grid grid = new Grid(initialState);
+        World world = new World(initialState);
 
-        Grid nextGrid = grid.getNextGrid();
-        Set<Cell> nextState = nextGrid.getState();
+        World nextWorld = world.getNextGrid();
+        Set<Cell> nextState = nextWorld.getState();
 
         assertTrue(shouldSurvive.test(nextState, cell));
     }
@@ -182,10 +182,10 @@ public class GridTest {
     }
 
     private void testNextState(Set<Cell> initialState, Set<Cell> expectedNextState) {
-        Grid grid = new Grid(initialState);
+        World world = new World(initialState);
 
-        Grid nextGrid = grid.getNextGrid();
-        Set<Cell> actualNextState = nextGrid.getState();
+        World nextWorld = world.getNextGrid();
+        Set<Cell> actualNextState = nextWorld.getState();
 
         assertEquals(expectedNextState, actualNextState);
     }
