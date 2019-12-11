@@ -17,10 +17,6 @@ public class UiCell extends Rectangle {
     private final BooleanProperty alive = new SimpleBooleanProperty();
     private final EventHandler<MouseEvent> onClickHandler = event -> setAlive(!isAlive());
 
-    public UiCell(ReadOnlyBooleanProperty isInInitMode) {
-        this(isInInitMode, false);
-    }
-
     public UiCell(ReadOnlyBooleanProperty isInInitMode, boolean alive) {
         super(SIZE, SIZE);
 
@@ -48,7 +44,18 @@ public class UiCell extends Rectangle {
     }
 
     private Color getColor(Boolean newValue) {
-        return newValue ? Color.AQUAMARINE : Color.LIGHTGRAY;
+        return newValue ? getRandomColor() : Color.LIGHTGRAY;
+    }
+
+    private Color getRandomColor() {
+        double r = Math.random();
+        if (r < 0.75)
+            return Color.AQUAMARINE;
+        else if (r < 0.85)
+            return Color.AQUA;
+        else if (r < 0.95)
+            return Color.MEDIUMAQUAMARINE;
+        return Color.LIGHTGOLDENRODYELLOW;
     }
 
     public boolean isAlive() {

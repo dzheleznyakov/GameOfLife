@@ -1,6 +1,7 @@
 package zh.learn.gameoflife.ui.factories;
 
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 
 import java.util.Objects;
 
@@ -15,13 +16,14 @@ public class TextFieldFactory {
             if (Objects.equals(value, ""))
                 return;
             int num = Integer.parseInt(value);
-            if (num < 2)
-                tf.setText("2");
+            if (num < 1)
+                tf.setText("1");
             else if (num > max)
                 tf.setText(oldValue);
             else
                 tf.setText(value);
         });
+        tf.setTooltip(new Tooltip("Max " + max));
         return tf;
     }
 }
