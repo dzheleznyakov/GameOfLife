@@ -14,7 +14,7 @@ public class NextStateButtonController {
         this.renderNextState = renderNextState;
     }
 
-    public void bindNextStateBtn() {
+    public void bind() {
         nextStateBtn.setOnAction(event -> {
             isPlaying.set(false);
             renderNextState.run();

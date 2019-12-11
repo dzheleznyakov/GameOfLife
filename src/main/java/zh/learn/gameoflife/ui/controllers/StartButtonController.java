@@ -3,6 +3,7 @@ package zh.learn.gameoflife.ui.controllers;
 import com.google.common.collect.ImmutableList;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -16,6 +17,7 @@ public class StartButtonController {
     private final BooleanProperty isInInitMode;
     private final BorderPane root;
     private final HBox controlBox;
+    private final Button startOverBtn;
     private final GridPane grid;
     private final ObjectProperty<World> world;
 
@@ -24,6 +26,7 @@ public class StartButtonController {
             BooleanProperty isInInitMode,
             BorderPane root,
             HBox controlBox,
+            Button startOverBtn,
             GridPane grid,
             ObjectProperty<World> world
     ) {
@@ -31,14 +34,15 @@ public class StartButtonController {
         this.isInInitMode = isInInitMode;
         this.root = root;
         this.controlBox = controlBox;
+        this.startOverBtn = startOverBtn;
         this.grid = grid;
         this.world = world;
     }
 
-    public void bindStartBtn() {
+    public void bind() {
         startBtn.setOnAction(event -> {
             isInInitMode.set(false);
-            root.setTop(null);
+            root.setTop(startOverBtn);
             root.setBottom(controlBox);
             ImmutableList<Cell> initialState = grid.getChildren().stream()
                     .map(UiCell.class::cast)

@@ -20,6 +20,7 @@ import zh.learn.gameoflife.backend.World;
 import zh.learn.gameoflife.ui.controllers.NextStateButtonController;
 import zh.learn.gameoflife.ui.controllers.PlayPauseButtonController;
 import zh.learn.gameoflife.ui.controllers.StartButtonController;
+import zh.learn.gameoflife.ui.controllers.StartOverButtonController;
 import zh.learn.gameoflife.ui.factories.ButtonFactory;
 import zh.learn.gameoflife.ui.factories.TextFieldFactory;
 
@@ -40,9 +41,13 @@ public class Main extends Application {
     private HBox initBox;
     private HBox controlBox;
 
+    private Label msgLbl;
+
     private Button startBtn;
     private Button nextStateBtn;
     private Button playPauseBtn;
+    private Button startOverBtn;
+
     private BorderPane root;
 
     private BooleanProperty isInInitMode = new SimpleBooleanProperty(true);
@@ -51,6 +56,7 @@ public class Main extends Application {
     private PlayPauseButtonController playPauseButtonController;
     private NextStateButtonController nextStateButtonController;
     private StartButtonController startButtonController;
+    private StartOverButtonController startOverButtonController;
 
     @Override
     public void start(Stage stage) {
@@ -63,20 +69,27 @@ public class Main extends Application {
         playPauseBtn = ButtonFactory.getPlayPauseBtn();
         controlBox = getControlBox();
 
+        startOverBtn = new Button("Start Over");
+        BorderPane.setAlignment(startOverBtn, Pos.CENTER);
+        BorderPane.setMargin(startOverBtn, PADDING);
+
         grid = getGrid();
-        root = renderRoot();
+        root = getRoot();
 
         renderCells();
         bindGrid();
 
-        startButtonController = new StartButtonController(startBtn, isInInitMode, root, controlBox, grid, worldProperty);
-        startButtonController.bindStartBtn();
+        startButtonController = new StartButtonController(startBtn, isInInitMode, root, controlBox, startOverBtn, grid, worldProperty);
+        startButtonController.bind();
 
         nextStateButtonController = new NextStateButtonController(nextStateBtn, isPlaying, this::renderNextState);
-        nextStateButtonController.bindNextStateBtn();
+        nextStateButtonController.bind();
 
-        playPauseButtonController = new PlayPauseButtonController(playPauseBtn, isPlaying, this::renderNextState);
-        playPauseButtonController.bindPlayPauseBtn();
+        playPauseButtonController = new PlayPauseButtonController(playPauseBtn, isInInitMode, isPlaying, this::renderNextState);
+        playPauseButtonController.bind();
+
+        startOverButtonController = new StartOverButtonController(startOverBtn, isInInitMode, root, initBox, msgLbl, worldProperty);
+        startOverButtonController.bind();
 
         stage.setScene(new Scene(root, 400.0, 300.0));
         stage.setTitle("Game of Life");
@@ -171,7 +184,7 @@ public class Main extends Application {
         }
     }
 
-    private BorderPane renderRoot() {
+    private BorderPane getRoot() {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-padding: 10;" +
                 "-fx-border-style: solid inside;" +
@@ -179,9 +192,9 @@ public class Main extends Application {
                 "-fx-border-insets: 5;" +
                 "-fx-border-radius: 5;" +
                 "-fx-border-color: blue;");
-        Label msgLbl = new Label("Click on a cell to set it alive");
+        msgLbl = new Label("Click on a cell to set it alive");
         BorderPane.setAlignment(msgLbl, Pos.CENTER);
-        BorderPane.setMargin(msgLbl, PADDING);
+        BorderPane.setMargin(msgLbl, PADDING);;
         root.setTop(msgLbl);
         root.setBottom(initBox);
         root.setCenter(grid);
