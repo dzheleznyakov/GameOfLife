@@ -129,6 +129,11 @@ public class Main extends Application {
         heightFld.textProperty().addListener((prop, oldValue, newValue) -> {
             if (!Objects.equals(newValue, "")) renderCells();
         });
+        worldProperty.addListener((prop, oldValue, newValue) -> {
+            if (newValue != null) {
+                renderCells();
+            }
+        });
     }
 
     private void renderNextState() {
@@ -144,6 +149,15 @@ public class Main extends Application {
             maxY = Integer.max(maxY, cell.getY());
         }
 
+        int realWidth = maxX - minX + 1;
+        int realHeight = maxY - minY + 1;
+        int requiredWidth = Integer.max(realWidth, Integer.parseInt(widthFld.getText()));
+        int requiredHeight = Integer.max(realHeight, Integer.parseInt(heightFld.getText()));
+        int width = Integer.min(requiredWidth, MAX_GRID_WIDTH);
+        int height = Integer.min(requiredHeight, MAX_GRID_HEIGHT);
+        widthFld.setText(String.valueOf(width));
+        heightFld.setText(String.valueOf(height));
+
         if (minX < 0 || minY < 0) {
             Set<Cell> nextState = new HashSet<>();
             for (Cell cell : nextWorld.getState()) {
@@ -155,17 +169,6 @@ public class Main extends Application {
         } else {
             worldProperty.set(nextWorld);
         }
-
-        int realWidth = maxX - minX + 1;
-        int realHeight = maxY - minY + 1;
-        int requiredWidth = Integer.max(realWidth, Integer.parseInt(widthFld.getText()));
-        int requiredHeight = Integer.max(realHeight, Integer.parseInt(heightFld.getText()));
-        int width = Integer.min(requiredWidth, MAX_GRID_WIDTH);
-        int height = Integer.min(requiredHeight, MAX_GRID_HEIGHT);
-        widthFld.setText(String.valueOf(width));
-        heightFld.setText(String.valueOf(height));
-
-        renderCells();
     }
 
     private BorderPane renderRoot() {
