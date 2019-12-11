@@ -49,7 +49,7 @@ public class PlayPauseButtonController {
         });
         isInInitMode.addListener((prop, oldValue, newValue) -> {
             if (newValue) {
-                isPlaying.set(falsegit);
+                isPlaying.set(false);
             }
         });
     }
