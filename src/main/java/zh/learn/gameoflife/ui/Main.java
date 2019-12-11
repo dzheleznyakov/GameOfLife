@@ -1,45 +1,38 @@
 package zh.learn.gameoflife.ui;
 
-import com.google.common.collect.ImmutableList;
-import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.ArcTo;
-import javafx.scene.shape.ClosePath;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
-import javafx.scene.shape.Path;
 import javafx.stage.Stage;
 import zh.learn.gameoflife.backend.Cell;
 import zh.learn.gameoflife.backend.World;
+import zh.learn.gameoflife.ui.controllers.NextStateButtonController;
+import zh.learn.gameoflife.ui.controllers.PlayPauseButtonController;
+import zh.learn.gameoflife.ui.controllers.StartButtonController;
+import zh.learn.gameoflife.ui.factories.ButtonFactory;
+import zh.learn.gameoflife.ui.factories.TextFieldFactory;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class Main extends Application {
     private static final Insets PADDING = new Insets(5.0);
     private static final int MAX_GRID_WIDTH = 75;
     private static final int MAX_GRID_HEIGHT = 40;
-    private static final Color BUTTON_ICON_COLOR = Color.GAINSBORO;
-    private static final double BUTTON_SIZE = 27.0;
 
-    private World world;
+    private ObjectProperty<World> worldProperty = new SimpleObjectProperty<>();
 
     private TextField widthFld;
     private TextField heightFld;
@@ -54,54 +47,40 @@ public class Main extends Application {
 
     private BooleanProperty isInInitMode = new SimpleBooleanProperty(true);
     private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
-    private Observable<Long> nextStateEmitter = Observable.interval(1, TimeUnit.SECONDS)
-            .observeOn(JavaFxScheduler.platform());
-    private Disposable nextStateSubscription;
+
+    private PlayPauseButtonController playPauseButtonController;
+    private NextStateButtonController nextStateButtonController;
+    private StartButtonController startButtonController;
 
     @Override
     public void start(Stage stage) {
-        widthFld = getNumericField(3, MAX_GRID_WIDTH);
-        heightFld = getNumericField(3, MAX_GRID_HEIGHT);
+        widthFld = TextFieldFactory.getNumericField(3, MAX_GRID_WIDTH);
+        heightFld = TextFieldFactory.getNumericField(3, MAX_GRID_HEIGHT);
         startBtn = new Button("Start");
         initBox = getInitBox();
 
-        nextStateBtn = getNextStateBtn();
-        playPauseBtn = getPlayPauseBtn();
+        nextStateBtn = ButtonFactory.getNextStateBtn();
+        playPauseBtn = ButtonFactory.getPlayPauseBtn();
         controlBox = getControlBox();
 
         grid = getGrid();
+        root = renderRoot();
 
         renderCells();
         bindGrid();
-        bindStartBtn();
-        bindNextStateBtn();
-        bindPlayPauseBtn();
 
-        root = renderRoot();
+        startButtonController = new StartButtonController(startBtn, isInInitMode, root, controlBox, grid, worldProperty);
+        startButtonController.bindStartBtn();
+
+        nextStateButtonController = new NextStateButtonController(nextStateBtn, isPlaying, this::renderNextState);
+        nextStateButtonController.bindNextStateBtn();
+
+        playPauseButtonController = new PlayPauseButtonController(playPauseBtn, isPlaying, this::renderNextState);
+        playPauseButtonController.bindPlayPauseBtn();
 
         stage.setScene(new Scene(root, 400.0, 300.0));
         stage.setTitle("Game of Life");
         stage.show();
-    }
-
-    private TextField getNumericField(int initialValue, int max) {
-        TextField tf = new TextField(String.valueOf(initialValue));
-        tf.setPrefColumnCount(3);
-        tf.textProperty().addListener((prop, oldValue, newValue) -> {
-            String value = newValue.matches("\\d*")
-                    ? newValue
-                    : newValue.replaceAll("[\\D]", "");
-            if (Objects.equals(value, ""))
-                return;
-            int num = Integer.parseInt(value);
-            if (num < 2)
-                tf.setText("2");
-            else if (num > max)
-                tf.setText(oldValue);
-            else
-                tf.setText(value);
-        });
-        return tf;
     }
 
     private HBox getInitBox() {
@@ -110,61 +89,6 @@ public class Main extends Application {
         initBox.setAlignment(Pos.CENTER);
         initBox.getChildren().addAll(new Label("Width"), widthFld, new Label("Height"), heightFld, startBtn);
         return initBox;
-    }
-
-    private Button getNextStateBtn() {
-        Path nextStepIcon = getNextStepIcon();
-        Button button = new Button(null, nextStepIcon);
-        button.setTooltip(new Tooltip("Next state"));
-        button.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-        button.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-        return button;
-    }
-
-    private static Path getNextStepIcon() {
-        Path nextStepIcon = new Path(new MoveTo(0.0, 0.0),
-                new LineTo(0.0, 20.0),
-                new LineTo(15.0, 10.0),
-                new ClosePath(),
-                new MoveTo(18.0, 1.0),
-                new ArcTo(1.0, 1.0, 0.0, 20.0, 1.0, false, true),
-                new LineTo(20.0, 19.0),
-                new ArcTo(1.0, 1.0, 0.0, 18.0, 19.0, false, true),
-                new ClosePath());
-        nextStepIcon.setFill(BUTTON_ICON_COLOR);
-        return nextStepIcon;
-    }
-
-    private Button getPlayPauseBtn() {
-        Button button = new Button(null, getPlayIcon());
-        button.setTooltip(new Tooltip("Play"));
-        button.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-        button.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-        return button;
-    }
-
-    private static Path getPlayIcon() {
-        Path playIcon = new Path(new MoveTo(0.0, 0.0),
-                new LineTo(0.0, 20.0),
-                new LineTo(20.0, 10.0),
-                new ClosePath());
-        playIcon.setFill(BUTTON_ICON_COLOR);
-        return playIcon;
-    }
-
-    private static Path getPauseIcon() {
-        Path pauseIcon = new Path(new MoveTo(5.0, 1.0),
-                new ArcTo(1.0, 1.0, 0.0, 7.0, 1.0, false, true),
-                new LineTo(7.0, 19.0),
-                new ArcTo(1.0, 1.0, 0.0, 5.0, 19.0, false, true),
-                new ClosePath(),
-                new MoveTo(13.0, 1.0),
-                new ArcTo(1.0, 1.0, 0.0, 15.0, 1.0, false, true),
-                new LineTo(15.0, 19.0),
-                new ArcTo(1.0, 1.0, 0.0, 13.0, 19.0, false, true),
-                new ClosePath());
-        pauseIcon.setFill(BUTTON_ICON_COLOR);
-        return pauseIcon;
     }
 
     private HBox getControlBox() {
@@ -190,9 +114,9 @@ public class Main extends Application {
         int height = Integer.parseInt(heightFld.getText());
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
-                boolean isAlive = world == null
+                boolean isAlive = worldProperty.get() == null
                         ? false
-                        : world.getState().contains(new Cell(x, y));
+                        : worldProperty.get().getState().contains(new Cell(x, y));
                 grid.add(new UiCell(isInInitMode, isAlive), x, y);
             }
         }
@@ -207,49 +131,8 @@ public class Main extends Application {
         });
     }
 
-    private void bindStartBtn() {
-        startBtn.setOnAction(event -> {
-            isInInitMode.set(false);
-            root.setBottom(controlBox);
-            ImmutableList<Cell> initialState = grid.getChildren().stream()
-                    .map(UiCell.class::cast)
-                    .filter(UiCell::isAlive)
-                    .map(uiCell -> {
-                        int x = uiCell.getXCoord();
-                        int y = uiCell.getYCoord();
-                        return new Cell(x, y);
-                    })
-                    .collect(ImmutableList.toImmutableList());
-            world = new World(initialState);
-        });
-    }
-
-    private void bindNextStateBtn() {
-        nextStateBtn.setOnAction(event -> {
-            isPlaying.set(false);
-            renderNextState();
-        });
-    }
-
-    private void bindPlayPauseBtn() {
-        playPauseBtn.setOnAction(event -> isPlaying.set(!isPlaying.get()));
-        isPlaying.addListener((prop, oldValue, newValue) -> {
-            if (isPlaying.get()) {
-                playPauseBtn.setGraphic(getPauseIcon());
-                playPauseBtn.getTooltip().setText("Play");
-                nextStateSubscription = nextStateEmitter.subscribe(tick -> renderNextState());
-            } else {
-                playPauseBtn.setGraphic(getPlayIcon());
-                playPauseBtn.getTooltip().setText("Pause");
-                if (nextStateSubscription != null && !nextStateSubscription.isDisposed()) {
-                    nextStateSubscription.dispose();
-                }
-            }
-        });
-    }
-
     private void renderNextState() {
-        World nextWorld = world.getNextWorld();
+        World nextWorld = worldProperty.get().getNextWorld();
         int minX = Integer.MAX_VALUE;
         int maxX = Integer.MIN_VALUE;
         int minY = Integer.MAX_VALUE;
@@ -268,9 +151,9 @@ public class Main extends Application {
                 int y = minY < 0 ? cell.getY() - minY : cell.getY();
                 nextState.add(new Cell(x, y));
             }
-            world = new World(nextState);
+            worldProperty.set(new World(nextState));
         } else {
-            world = nextWorld;
+            worldProperty.set(nextWorld);
         }
 
         int realWidth = maxX - minX + 1;
@@ -293,6 +176,10 @@ public class Main extends Application {
                 "-fx-border-insets: 5;" +
                 "-fx-border-radius: 5;" +
                 "-fx-border-color: blue;");
+        Label msgLbl = new Label("Click on a cell to set it alive");
+        BorderPane.setAlignment(msgLbl, Pos.CENTER);
+        BorderPane.setMargin(msgLbl, PADDING);
+        root.setTop(msgLbl);
         root.setBottom(initBox);
         root.setCenter(grid);
         return root;
