@@ -103,7 +103,7 @@ public class WorldTest {
     private void testCellInNextState(Set<Cell> initialState, Cell cell, BiPredicate<Set<Cell>, Cell> shouldSurvive) {
         World world = new World(initialState);
 
-        World nextWorld = world.getNextGrid();
+        World nextWorld = world.getNextWorld();
         Set<Cell> nextState = nextWorld.getState();
 
         assertTrue(shouldSurvive.test(nextState, cell));
@@ -184,7 +184,7 @@ public class WorldTest {
     private void testNextState(Set<Cell> initialState, Set<Cell> expectedNextState) {
         World world = new World(initialState);
 
-        World nextWorld = world.getNextGrid();
+        World nextWorld = world.getNextWorld();
         Set<Cell> actualNextState = nextWorld.getState();
 
         assertEquals(expectedNextState, actualNextState);

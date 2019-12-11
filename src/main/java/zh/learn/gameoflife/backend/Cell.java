@@ -21,6 +21,14 @@ public class Cell {
                 new Cell(x - 1, y + 1), new Cell(x, y + 1), new Cell(x + 1, y + 1));
     }
 
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

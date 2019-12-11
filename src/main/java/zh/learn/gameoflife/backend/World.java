@@ -5,21 +5,21 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Set;
 
-public class Grid {
+public class World {
     private final Set<Cell> state;
 
-    public Grid(Collection<Cell> aliveCells) {
+    public World(Collection<Cell> aliveCells) {
         this.state = ImmutableSet.copyOf(aliveCells);
     }
 
-    public Grid getNextGrid() {
+    public World getNextWorld() {
         Set<Cell> nextState = state.stream()
                 .map(Cell::getNeighbours)
                 .flatMap(Set::stream)
                 .filter(cell -> state.contains(cell) ? shouldSurvive(cell) : shouldComeAlive(cell))
                 .collect(ImmutableSet.toImmutableSet());
 
-        return new Grid(nextState);
+        return new World(nextState);
     }
 
     private boolean shouldSurvive(Cell cell) {
