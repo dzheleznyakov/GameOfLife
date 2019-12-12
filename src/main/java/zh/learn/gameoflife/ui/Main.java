@@ -58,6 +58,10 @@ public class Main extends Application {
     private StartButtonController startButtonController;
     private StartOverButtonController startOverButtonController;
 
+    public static void main(String[] args) {
+        launch(args);
+    }
+
     @Override
     public void start(Stage stage) {
         widthFld = TextFieldFactory.getNumericField(3, MAX_GRID_WIDTH);
@@ -194,14 +198,10 @@ public class Main extends Application {
                 "-fx-border-color: blue;");
         msgLbl = new Label("Click on a cell to set it alive");
         BorderPane.setAlignment(msgLbl, Pos.CENTER);
-        BorderPane.setMargin(msgLbl, PADDING);;
+        BorderPane.setMargin(msgLbl, PADDING);
         root.setTop(msgLbl);
         root.setBottom(initBox);
         root.setCenter(grid);
         return root;
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

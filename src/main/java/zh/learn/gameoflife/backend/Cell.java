@@ -15,10 +15,15 @@ public class Cell {
     }
 
     public Set<Cell> getNeighbours() {
-        return ImmutableSet.of(
-                new Cell(x - 1, y - 1), new Cell(x, y - 1), new Cell(x + 1, y - 1),
-                new Cell(x - 1, y), new Cell(x + 1, y),
-                new Cell(x - 1, y + 1), new Cell(x, y + 1), new Cell(x + 1, y + 1));
+        ImmutableSet.Builder<Cell> builder = ImmutableSet.builder();
+        for (int i = -1; i <= 1 ; ++i) {
+            for (int j = -1; j <= 1; ++j) {
+                if (i != 0 || j != 0) {
+                    builder.add(new Cell(x + i, y + j));
+                }
+            }
+        }
+        return builder.build();
     }
 
     public int getX() {
